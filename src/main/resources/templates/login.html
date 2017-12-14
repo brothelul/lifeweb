@@ -6,6 +6,7 @@
 		<title></title>
 		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
 		<link href="/css/mui.min.css" rel="stylesheet" />
+		<script src="/js/jquery.min.js"></script>
 		<script src="/js/mui.min.js"></script>
 		<script type="text/javascript">
 			mui.init()
@@ -19,24 +20,57 @@
 		<form class="mui-input-group">
 			<div class="mui-input-row">
 				<label>用户名</label>
-				<input type="text" class="mui-input-clear" placeholder="请输入用户名">
+				<input type="text" id="username" class="mui-input-clear" placeholder="请输入用户名">
 			</div>
 			<div class="mui-input-row">       
          		<label>密&nbsp;&nbsp;&nbsp;码</label>       
-        		<input type="password" class="mui-input-password" placeholder="请输入密码">   
+        		<input type="password" id="password" class="mui-input-password" placeholder="请输入密码">   
 			</div>
     		<div class="mui-button-row" style="margin-top: 3%;">
-    			<button type="button" data-loading-text="登录中" class="mui-btn mui-btn-primary" style="width: 95%;">登录</button>       			
+    			<button type="button" data-loading-text="登录中" class="mui-btn mui-btn-primary" id="login" style="width: 95%;">登录</button>       			
     			<script type="text/javascript">
        				mui(document.body).on('tap', '.mui-btn', function(e) {mui(this).button('loading');
-    setTimeout(function() {
-        mui(this).button('reset');
-    }.bind(this), 2000);
-});
-</script>
+       			    setTimeout(function() {
+       			        mui(this).button('reset');
+       			       }.bind(this), 500);
+       				});   
+
+
+       		  document.getElementById("login").addEventListener('tap', function() 
+       				{
+       					var username = $("#username").val();
+       					var password = $("#password").val();
+       					console.log(username+":"+password);
+       					if(username == "" || password == ""){
+       						mui.toast('用户名或密码不能为空');
+       					} else{
+       						var userData = '{"username":"'+username+'","password":"'+password+'"}';
+       						console.log(userData);
+       						$.ajax({
+           							url:"user/login",
+           							type:"POST",
+           							data:userData,
+           							contentType : 'application/json',
+           							dataType : 'json',
+           							success : function(data){
+           								//var result = jQuery.parseJSON(data);
+           								console.log(data);
+           								if(data.statusCode == 200){
+           									mui.toast('欢迎使用life，'+data.msg);
+           									window.location.href = 'user/index';
+           								} else{
+           									mui.toast('用户名或密码不正确');
+           								}
+           							},
+           							error: function(){
+           								mui.toast('oh，网站貌似有点问题');
+           							}
+           							
+       						});
+       					}      				  
+       				});
+       		  </script>
     		</div>
 		</form>
 		</div>
-		
-	</body>
-</html>
+		</div>

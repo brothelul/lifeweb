@@ -4,13 +4,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
     <title></title>
-    <script src="/js/mui.min.js"></script>
-    <link href="/css/mui.min.css" rel="stylesheet"/>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/mui.js"></script>
+    <script src="/js/mui.dtpicker.js"></script>
+    <script src="/js/mui.poppicker.js"></script>
+    <script src="/js/mui.picker.js"></script>
+    <link href="/css/mui.css" rel="stylesheet"/>
+    <link href="/css/mui.dtpicker.css" rel="stylesheet"/>
+    <link href="/css/mui.poppicker.css" rel="stylesheet"/>
+    <link href="/css/mui.picker.css" rel="stylesheet"/>
     <script type="text/javascript" charset="utf-8">
 	mui.init({
 		pullRefresh : {
 			container:"#refreshContainer",//待刷新区域标识，querySelector能定位的css选择器均可，比如：id、.class等		
    			up : {
+   		      height:50,//可选.默认50.触发上拉加载拖动距离
+   		      auto:false,//可选,默认false.自动上拉加载一次
+   		      contentrefresh : "正在加载...",//可选，正在加载状态时，上拉加载控件上显示的标题内容
+   		      contentnomore:'没有更多数据了',
     		    	callback :pullupRefresh //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
     		}
   		}
@@ -19,74 +30,71 @@
 
      function pullupRefresh() {
         setTimeout(function() {
-                    //找出body标签下所有class为mui-table-view的标签
-                    var table = document.body.querySelector('.mui-table-view');        
+                    //找出body标签下所有class为mui-table-view的标签        
                     for (var i = 0; i < 3; i++) {
-                        var ul = document.createElement('ul');
-                        //设置mui样式
-                        ul.className = 'mui-table-view mui-table-view-chevron';
-                        //文字
-                        ul.innerHTML = "<div class='mui-card'><div class='mui-card-header '>家庭生活开支</div><div class='mui-card-content'>内容区"+i+"</div><div class='mui-card-footer'>消费时间"+new Date()+"</div></div>";
+
+
+                        var html = "<div class='mui-card' style='margin-bottom: 10%;'><div class='mui-card-header '>家庭生活开支</div><div class='mui-card-content'>内容区"+i+"</div><div class='mui-card-footer'>消费时间"+new Date()+"</div></div>";
                         //下拉刷新，新纪录插到最前面；
-                        table.insertBefore(ul);
+                        $("#scroll").append(html);
                     }
-                    mui('#pullrefresh').pullRefresh().enablePullupToRefresh(); //refresh completed
+
+                    console.log("OK");
+                   mui('#refreshContainer').pullRefresh().enablePullupToRefresh(); //refresh completed
+                   // mui('#pullup-container').pullRefresh().refresh(true);
+                  //  mui('#refreshContainer').pullRefresh().refresh(true);
                 }, 500);
+//           this.endPullupToRefresh(true);
+
            }
      
-     mui('#popover').popover('toggle'); 
 </script>
 </head>
 <body>
-	
+
 <header class="mui-bar mui-bar-nav">
     <a id="back" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
     <h1 id="title" class="mui-title">消费记录详情页</h1>
 </header>	
 	<!--下拉刷新容器-->
 <div id="refreshContainer" class="mui-content mui-scroll-wrapper" style="margin-bottom: 10%;">
-  <div class="mui-scroll">
+  <div class="mui-scroll" id="scroll">
+   
     <!--数据列表-->
-    <ul class="mui-table-view mui-table-view-chevron">
-          <div class="mui-card">
-	<!--页眉，放置标题-->
-	<div class="mui-card-header ">家庭生活开支</div>
-	<!--内容区-->
-	<div class="mui-card-content">内容区</div>
-	<!--页脚，放置补充信息或支持的操作-->
-	<div class="mui-card-footer">页脚</div>
-	</div>
-    </ul>
-    <ul class="mui-table-view mui-table-view-chevron">
-        <div class="mui-card">
-	<!--页眉，放置标题-->
-	<div class="mui-card-header ">家庭生活开支</div>
-	<!--内容区-->
-	<div class="mui-card-content">内容区</div>
-	<!--页脚，放置补充信息或支持的操作-->
-	<div class="mui-card-footer">页脚</div>
-	</div>
-    </ul>
-        <ul class="mui-table-view mui-table-view-chevron">
-        <div class="mui-card">
-	<!--页眉，放置标题-->
-	<div class="mui-card-header ">家庭生活开支</div>
-	<!--内容区-->
-	<div class="mui-card-content">内容区</div>
-	<!--页脚，放置补充信息或支持的操作-->
-	<div class="mui-card-footer">页脚</div>
-	</div>
-    </ul>
+     <div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">
 
-<div id="popover" class="mui-popover">
-  <ul class="mui-table-view">
-    <li class="mui-table-view-cell"><a href="#">Item1</a></li>
-    <li class="mui-table-view-cell"><a href="#">Item2</a></li>
-    <li class="mui-table-view-cell"><a href="#">Item3</a></li>
-    <li class="mui-table-view-cell"><a href="#">Item4</a></li>
-    <li class="mui-table-view-cell"><a href="#">Item5</a></li>
-  </ul>
-</div>
+	<!--页眉，放置标题-->
+	<div class="mui-card-header ">家庭生活开支</div>
+	<!--内容区-->
+	<div class="mui-card-content">内容区</div>
+	<!--页脚，放置补充信息或支持的操作-->
+	<div class="mui-card-footer">页脚</div>
+
+    </div>
+    
+    <!--数据列表-->
+        <div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">
+
+	<!--页眉，放置标题-->
+	<div class="mui-card-header ">家庭生活开支</div>
+	<!--内容区-->
+	<div class="mui-card-content">内容区</div>
+	<!--页脚，放置补充信息或支持的操作-->
+	<div class="mui-card-footer">页脚</div>
+
+    </div>
+
+    <!--数据列表-->
+        <div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">
+
+	<!--页眉，放置标题-->
+	<div class="mui-card-header ">家庭生活开支</div>
+	<!--内容区-->
+	<div class="mui-card-content">内容区</div>
+	<!--页脚，放置补充信息或支持的操作-->
+	<div class="mui-card-footer">页脚</div>
+
+    </div>
   </div>
 </div>
 
@@ -94,7 +102,7 @@
 
 
     <nav class="mui-bar mui-bar-tab mui-bar-footer" id="nav">  
-    	    <a class="mui-tab-item " id="a2">  
+    	    <a class="mui-tab-item " id="a1">  
                 <span class="mui-icon mui-icon-search"></span>  
                 <span class="mui-tab-label">查询消费</span>  
             </a> 
@@ -102,10 +110,163 @@
                 <span class="mui-icon mui-icon-plus"></span>  
                 <span class="mui-tab-label">添加记录</span>
             </a> 
-            <a class="mui-tab-item" id="a3"> 
-            <div> cost
-			</div>
-            </a>
+<!--             <a class="mui-tab-item" id="a3"> 
+			<span class="mui-icon"></span>
+			<span class="mui-tab-label">消费：39.6元</span>
+            </a> -->
    </nav> 
+   
+   <script type="text/javascript">
+		//输入框prompt
+	     document.getElementById("a1").addEventListener('tap', function(e) 
+	    	     {
+	    	         //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
+	    	         e.detail.gesture.preventDefault(); 
+	    	         var btnArray = ['取消', '开始'];
+	    	         mui.prompt('', '', '自定义查询', btnArray, function(e) 
+	    	         {
+	    	             if (e.index == 1) 
+	    	             {
+	    	            	 mui.toast('登录失败');
+	    	             } 
+	    	             else 
+	    	             {
+	    	            	 mui.toast('取消');
+	    	             }
+	    	         },'div');
+	    	         $('.mui-popup-input').after("<form class='mui-input-group' style='margin-top:10%;'><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='开始时间' id='startDate' readonly='readonly'></div><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='结束时间' id='endDate' readonly='readonly'></div><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='消费用途' id='type' readonly='readonly'></div><div class='mui-input-row'>仅看我<div class='mui-switch mui-switch-blue mui-active' id='onlyMe'><div class='mui-switch-handle' ></div></div></div></form");
+	    	         $('.mui-popup-input input').remove();  
+
+	    		     document.querySelector('#type').addEventListener("tap", function() {
+	    		         var roadPick = new mui.PopPicker();//获取弹出列表组建，假如是二联则在括号里面加入{layer:2}
+	    		                   roadPick.setData([{//设置弹出列表的信息，假如是二联，还需要一个children属性
+	    		                       value: "1",
+	    		                       text: "生活小分队"
+	    		                   }, {
+	    		                       value: "2",
+	    		                       text: "借贷"
+	    		                   }]);
+	    		         roadPick.show(function(item) {//弹出列表并在里面写业务代码
+	    		           var itemCallback=roadPick.getSelectedItems();  
+	    		            $('#type').val(itemCallback[0].text);
+	    		          });
+	    		               }); 
+		               
+	    		     document.querySelector('#startDate').addEventListener("tap", function() {
+	    		     var dtpicker = new mui.DtPicker({ 
+	    		    	    type: "datetime",//设置日历初始视图模式 
+	    		    	    beginDate: new Date(2015, 04, 25, 00, 00),//设置开始日期 
+	    		    	    endDate: new Date(),//设置结束日期 
+	    		    	    labels: ['年', '月', '日', '时', '分'],//设置默认标签区域提示语 
+	    		    	    customData: {}
+
+	    		    	});
+	    		    	dtpicker.show(function(e) { 
+	    		    	    console.log(e.text); 
+	    		    	    $('#startDate').val(e.text);
+/* 		    		    	var iTems = dtpicker.getSelectedItems();
+		    		    	console.log(iTems);  */
+	    		    	})   		
+
+	    		     });
+
+		               
+	    		     document.querySelector('#endDate').addEventListener("tap", function() {
+	    		     var dtpicker = new mui.DtPicker({ 
+	    		    	    type: "datetime",//设置日历初始视图模式 
+	    		    	    beginDate: new Date(2015, 04, 25, 00, 00),//设置开始日期 
+	    		    	    endDate: new Date(),//设置结束日期 
+	    		    	    labels: ['年', '月', '日', '时', '分'],//设置默认标签区域提示语 
+	    		    	    customData: {}
+
+	    		    	});
+	    		    	dtpicker.show(function(e) { 
+	    		    	    console.log(e.text); 
+	    		    	    $('#endDate').val(e.text);
+/* 		    		    	var iTems = dtpicker.getSelectedItems();
+		    		    	console.log(iTems);  */
+	    		    	})
+
+	    		     });
+
+                     mui('.mui-switch').switch();
+	    	         mui(".mui-switch").switch().toggle(); 
+	    	         document.getElementById("onlyMe").addEventListener("toggle",function(event){
+	    	        	  if(event.detail.isActive){
+	    	        	    console.log("你启动了开关");
+	    	        	  }else{
+	    	        	    console.log("你关闭了开关");  
+	    	        	  }
+	    	        	})
+	     });
+
+			//输入框prompt
+	     document.getElementById("a2").addEventListener('tap', function(e) 
+	    	     {
+	    	         //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
+	    	         e.detail.gesture.preventDefault(); 
+	    	         var btnArray = ['取消', '确定'];
+	    	         mui.prompt('', '', '添加消费记录', btnArray, function(e) 
+	    	         {
+	    	             if (e.index == 1) 
+	    	             {
+	    	            	 mui.toast('登录失败');
+	    	            	 console.log($("#desc").val());
+	    	             } 
+	    	             else 
+	    	             {
+	    	            	 mui.toast('取消');
+	    	             }
+	    	         },'div');
+	    	         $('.mui-popup-input').after("<form class='mui-input-group' style='margin-top:10%;'><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='消费金额' id='money'><label>元</label></div><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='消费时间' readonly='readonly' id='time'></div><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='消费用途' id='type' readonly='readonly'></div><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='消费描述' id='desc'></div></form");
+	    	         $('.mui-popup-input input').remove();   
+
+	    		     document.querySelector('#type').addEventListener("tap", function() {
+	    		         var roadPick = new mui.PopPicker();//获取弹出列表组建，假如是二联则在括号里面加入{layer:2}
+	    		                   roadPick.setData([{//设置弹出列表的信息，假如是二联，还需要一个children属性
+	    		                       value: "1",
+	    		                       text: "生活小分队"
+	    		                   }, {
+	    		                       value: "2",
+	    		                       text: "借贷"
+	    		                   }]);
+	    		         roadPick.show(function(item) {//弹出列表并在里面写业务代码
+	    		           var itemCallback=roadPick.getSelectedItems();  
+	    		            $('#type').val(itemCallback[0].text);
+	    		          });
+	    		               }); 
+		               
+	    		     document.querySelector('#time').addEventListener("tap", function() {
+	    		     var dtpicker = new mui.DtPicker({ 
+	    		    	    type: "datetime",//设置日历初始视图模式 
+	    		    	    beginDate: new Date(2015, 04, 25, 00, 00),//设置开始日期 
+	    		    	    endDate: new Date(),//设置结束日期 
+	    		    	    labels: ['年', '月', '日', '时', '分'],//设置默认标签区域提示语 
+	    		    	    customData: {}
+
+	    		    	});
+	    		    	dtpicker.show(function(e) { 
+	    		    	    console.log(e.text); 
+	    		    	    $('#time').val(e.text);
+/* 		    		    	var iTems = dtpicker.getSelectedItems();
+		    		    	console.log(iTems);  */
+	    		    	})
+
+	    		     });
+	     });
+
+/* 	     var dtpicker = new mui.DtPicker({ 
+	    	    "type": "time",
+	    	    "customData": {
+	    	        "h": [ 
+	    	            { value: "am", text: "上午" },
+	    	            { value: "pm", text: "下午" },
+	    	        ]
+	    	    } 
+	    	})
+	    	dtpicker.show(function(e) { 
+	    	    console.log(e); 
+	    	}) */
+   </script>
 </body>
 </html>

@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
     <title></title>
+    <script src="/js/jquery.min.js"></script>
     <link href="/css/mui.min.css" rel="stylesheet"/>
     <script src="/js/mui.min.js"></script>  
         <style>
@@ -28,6 +29,9 @@
                 background-color: #f5fafe;
             }
     </style>
+    <script type="text/javascript">
+    mui.init();
+    </script>
 </head>
 <body>
 <header class="mui-bar mui-bar-nav">
@@ -43,10 +47,13 @@
 	<!--页眉，放置标题-->
 	<div class="mui-card-header">页眉</div>
 	<!--内容区-->
-	<div class="mui-card-content">内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa内容区dasa
+	<div class="mui-card-content">
+	<b>牛肉面、花菜、金针菇。。。</b>	---来自我怕
 	<br/>
-	内容区dasa内容区dasa内容区dasa内容区dasa
-	<br/></div>
+	<b>牛肉面、花菜、金针菇。。。</b>	---来自我高
+	<br/>
+	<b>牛肉面、黑丝瓜、南瓜菇。。。</b>	---来自我小
+	</div>
 </div>
 <!--
 	作者：1285823170@qq.com
@@ -55,30 +62,22 @@
 -->
 	<div class="mui-card">
 	<!--页眉，放置标题-->
-	<div class="mui-card-header">消费</div>
+	<div class="mui-card-header">消费情况总览
+		<span class="mui-icon mui-icon-redo" id='toCost'></span>
+	</div>
+	<script type="text/javascript">
+    document.getElementById("toCost").addEventListener('tap', function(){
+    	window.location.href = 'order';
+    });
+	</script>
 	<!--内容区-->
 	<div class="mui-card-content">
-		<table class="table" width="100%">
-			<tr>
-				<th>用户</th>
-				<th>分类名</th>
-				<th>花费</th>
-			</tr>
-			<tr>
-				<td  class="mui-table-cell">test1</td>
-				<td  class="mui-table-cell">生活</td>
-				<td  class="mui-table-cell">23.0</td>
-			</tr>	
-				<td  class="mui-table-cell">test1</td>
-				<td  class="mui-table-cell">生活</td>
-				<td  class="mui-table-cell">23.0</td>
-			<tr>
-				<td  class="mui-table-cell">test1</td>
-				<td  class="mui-table-cell">生活</td>
-				<td  class="mui-table-cell">23.0</td>
-			</tr>	
-			</tbody>
-		</table>
+	<ul class="mui-table-view">
+    <li class="mui-table-view-cell"><b>小花</b>在生活中累计消费
+    	<span class="mui-badge mui-badge-primary">23.5元</span></li>
+    <li class="mui-table-view-cell"><b>小花</b>在生活中累计消费
+    	<span class="mui-badge mui-badge-primary">23.5元</span></li>
+	</ul>
 	</div>
 </div>
 
