@@ -26,6 +26,7 @@ import com.brotherlu.lifeweb.vo.CommonResultVo;
 public class HttpUtil {
 	private static Logger logger = LoggerFactory.getLogger(HttpUtil.class);
 	public static void doGet(String url, CommonResultVo resultVo){
+		logger.info(">>>>>>>>request info:{url:"+url+"}>>>>>>>>>>>>>>>");
 		DefaultHttpClient client = new DefaultHttpClient();
 		HttpGet get = new HttpGet(url);
 		try {
@@ -37,6 +38,7 @@ public class HttpUtil {
 		} 
 	}
 	public static void doPost(String url, String content, CommonResultVo resultVo){
+		logger.info(">>>>>>>>request info:{url:"+url+",content:"+content+"}>>>>>>>>>>>>>>>");
 		DefaultHttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(url);
 		if(!StringUtils.isEmpty(content)){
@@ -64,7 +66,7 @@ public class HttpUtil {
 		if(entity != null){
 			String body = EntityUtils.toString(entity, CommonConstant.UTF8);
 			resultVo.setData(body);
-			logger.info(body);
+			logger.info(">>>>>>>>>>>>response body:"+body+">>>>>>>>>>>>>>>>>");
 		}
 	}
 	

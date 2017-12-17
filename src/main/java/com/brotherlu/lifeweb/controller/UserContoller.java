@@ -37,7 +37,7 @@ public class UserContoller {
     		resultVo.setMsg("用户名或密码不正确");
 			return resultVo;
 		} else {
-	    	session.setAttribute("userInfo", userInfoVo); 
+	    	session.setAttribute("lifeUser", userInfoVo); 
     		resultVo.setStatusCode(200);
     		resultVo.setMsg(userInfoVo.getUsername());
     		resultVo.setSuccess(CommonResultVo.SUCCESS);
@@ -45,6 +45,10 @@ public class UserContoller {
     	   	
 		return resultVo;
 	}
+	
+//	public CommonResultVo findUserTotalCost() {
+//		
+//	}
 	
 	@RequestMapping("user/index")
 	public String toIndex() {
@@ -63,4 +67,5 @@ public class UserContoller {
 		
 		return "order";
 	}
+	
 }

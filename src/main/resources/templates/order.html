@@ -27,33 +27,143 @@
   		}
 		
 	});
-
-     function pullupRefresh() {
-        setTimeout(function() {
-                    //找出body标签下所有class为mui-table-view的标签        
-                    for (var i = 0; i < 3; i++) {
-
-
-                        var html = "<div class='mui-card' style='margin-bottom: 10%;'><div class='mui-card-header '>家庭生活开支</div><div class='mui-card-content'>内容区"+i+"</div><div class='mui-card-footer'>消费时间"+new Date()+"</div></div>";
-                        //下拉刷新，新纪录插到最前面；
-                        $("#scroll").append(html);
-                    }
-
-                    console.log("OK");
-                   mui('#refreshContainer').pullRefresh().enablePullupToRefresh(); //refresh completed
-                   // mui('#pullup-container').pullRefresh().refresh(true);
-                  //  mui('#refreshContainer').pullRefresh().refresh(true);
-                }, 500);
-//           this.endPullupToRefresh(true);
-
-           }
+	
+     /*
+     *
+     * ajax 预加载页面数据
+     */
+     var types;
      
+     //请求详细信息的参数
+     var pageSize = 4;
+     var startNo = 0;
+     var queryTypeNo = -1;
+     var startDate ="";
+     var endDate ="";
+     var onlyMe = false;
+     
+     $(document).ready(function(){
+         /*
+    	 *	加载分类信息
+    	 *
+    	 */
+         $.ajax({
+          	type:"get",
+          	url:"types",
+          	async:true,
+          	success: function(data){
+          		if(data.statusCode == 200){
+              		types = jQuery.parseJSON(data.data);
+          		}else{
+          			mui.toast(data.msg);
+          		}
+          	},
+          	error:function(){
+          		mui.toast("oh，life开小差了");
+          	}
+          });  
+         
+         //加载数据
+         loadCostInfos(pageSize,startNo,startDate,endDate,onlyMe,queryTypeNo);
+     });
+     
+     function loadCostInfos(pageSize1,startNo1,startDate1,endDate1,onlyMe1,queryTypeNo1){
+         /*
+          * 获取查询信息
+          */
+          var requestData = '{"type_no":'+queryTypeNo+',"start_date":"'+startDate1+'","end_date":"'+endDate1+'","start_page":'+startNo1+',"page_size":'+pageSize1+',"only_me":'+onlyMe1+'}';
+          console.log(requestData);
+          $.ajax({
+				url:"cost/info",
+				type:"POST",
+				data:requestData,
+				contentType : 'application/json',
+				dataType : 'json',
+				success : function(data){
+					if(data.statusCode == 200 && data.data != null){
+						var costInfos = jQuery.parseJSON(data.data);
+						if(costInfos.length <= 0){
+							mui.toast("没有更多数据了");
+							return;
+						}
+						console.log(costInfos.length);
+						if(startNo1 == 0){
+							$("#scroll").html("");
+						}
+						for(var i = 0; i< costInfos.length; i ++){
+							var costInfo = costInfos[i];
+		           			 var str = '<div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">';
+		        			 str = str + '<div class="mui-card-header mui-card-media" style="height:auto;background-image:url(/img/header.jpg)"><b>'+costInfo.typeName+'</b></div>';
+		        			 str = str + '<div class="mui-card-content" style="height:25vw;background-image:url(/img/header.jpg)">';
+		        			 str = str + '<div style="padding-top: 5%;"><div><span class="mui-icon mui-icon-person" style="padding-left: 1%;"></span> <span class="mui-badge mui-badge-primary">'+costInfo.username+'</span>';
+		        			 str = str + '<span class="mui-icon mui-icon-star" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-green">'+costInfo.costDate+'</span>';
+		        			 str = str + '<span class="mui-icon mui-icon-locked" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-warning">'+costInfo.costMoney+'元</span>';
+		        			 str = str + '</div><div><span class="mui-icon mui-icon-chatbubble" style="padding-left: 1%;padding-right: 1%;padding-top:3%"></span><span class="mui-badge mui-badge-warning">'+costInfo.costDesc+'</span></div></div></div></div>';
+		        			 $("#scroll").append(str);
+						}
+					}else{
+						mui.toast("没有更多数据了");
+					}
+					
+				},
+				error : function(){
+					mui.toast("oh，life开小差了");
+				}
+        	  
+          });
+     };
+     
+     /*
+     *	下拉刷新消费信息
+     *
+     */
+     function pullupRefresh() {
+         setTimeout(function() {
+                     //找出body标签下所有class为mui-table-view的标签        
+                     console.log(startNo);
+                    startNo ++;
+                    loadCostInfos(pageSize,startNo,startDate,endDate,onlyMe);
+                    console.log("OK");
+					mui('#refreshContainer').pullRefresh().enablePullupToRefresh(true);
+                    //refresh completed
+                    // mui('#pullup-container').pullRefresh().refresh(true);
+                   //  mui('#refreshContainer').pullRefresh().refresh(true);
+                 }, 500);
+//            this.endPullupToRefresh(true);
+
+            }
+ 
+/*      function getTotalCost(){
+         var requestData = '{"type_no":-1,"start_date":"","end_date":"","start_page":0,"page_size":9,"only_me":false}';
+     	$.ajax({
+ 			url:"cost/total",
+ 			type:"POST",
+ 			data:requestData,
+ 			contentType : 'application/json',
+ 			dataType : 'json',
+ 			success : function(data){
+ 				if(data.statusCode == 200 && data.data != null){
+ 					var totalCostInfos = jQuery.parseJSON(data.data);
+ 					console.log(data.data);
+ 					$(".mui-table-view").html("");
+ 					for(var i=0; i < totalCostInfos.length; i++){
+ 						var totalCostInfo = totalCostInfos[i];
+ 						var str = "";
+ 						str = str + '<li class="mui-table-view-cell"><b>'+totalCostInfo.username+'</b>'+totalCostInfo.typeName+'<span class="mui-badge mui-badge-primary">'+totalCostInfo.totalCost+'元</span></li>';
+ 						$(".mui-table-view").append(str);
+ 					}
+ 				}
+ 			},
+ 			error : function(){
+ 				mui.toast("oh，life开小差了");
+ 			}
+     } */
 </script>
 </head>
 <body>
 
 <header class="mui-bar mui-bar-nav">
-    <a id="back" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+    <a id="back" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left" href="/user/index"></a>
     <h1 id="title" class="mui-title">消费记录详情页</h1>
 </header>	
 	<!--下拉刷新容器-->
@@ -64,39 +174,18 @@
      <div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">
 
 	<!--页眉，放置标题-->
-	<div class="mui-card-header ">家庭生活开支</div>
+	<div class="mui-card-header mui-card-media" style="height:auto;background-image:url(/img/header.jpg)"><b>家庭生活开支 </b></div>
 	<!--内容区-->
-	<div class="mui-card-content">内容区</div>
-	<!--页脚，放置补充信息或支持的操作-->
-	<div class="mui-card-footer">页脚</div>
-
+	<div class="mui-card-content" style="height:40vw;background-image:url(/img/header.jpg)">
+		<div style="padding-top: 5%;">
+			<span class="mui-icon mui-icon-person" style="padding-left: 1%;"></span> <span class="mui-badge mui-badge-primary">Test</span>
+			<span class="mui-icon mui-icon-star" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-green">2017-12-15 08:33</span>
+			<span class="mui-icon mui-icon-locked" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-warning">23.50元</span>
+		</div>
+	</div>
     </div>
-    
-    <!--数据列表-->
-        <div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">
-
-	<!--页眉，放置标题-->
-	<div class="mui-card-header ">家庭生活开支</div>
-	<!--内容区-->
-	<div class="mui-card-content">内容区</div>
-	<!--页脚，放置补充信息或支持的操作-->
-	<div class="mui-card-footer">页脚</div>
-
-    </div>
-
-    <!--数据列表-->
-        <div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">
-
-	<!--页眉，放置标题-->
-	<div class="mui-card-header ">家庭生活开支</div>
-	<!--内容区-->
-	<div class="mui-card-content">内容区</div>
-	<!--页脚，放置补充信息或支持的操作-->
-	<div class="mui-card-footer">页脚</div>
-
     </div>
   </div>
-</div>
 
 
 
@@ -127,35 +216,36 @@
 	    	         {
 	    	             if (e.index == 1) 
 	    	             {
-	    	            	 mui.toast('登录失败');
+	    	            	 startNo = 0;
+	    	            	 mui("#refreshContainer").scroll().scrollTo(0,-100,0);
+	    	            	 mui('#refreshContainer').pullRefresh().enablePullupToRefresh(true);
+	    	            	 loadCostInfos(pageSize,startNo,startDate,endDate,onlyMe,queryTypeNo);
 	    	             } 
 	    	             else 
 	    	             {
-	    	            	 mui.toast('取消');
+	    	            	 mui.toast('取消查询');
 	    	             }
 	    	         },'div');
-	    	         $('.mui-popup-input').after("<form class='mui-input-group' style='margin-top:10%;'><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='开始时间' id='startDate' readonly='readonly'></div><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='结束时间' id='endDate' readonly='readonly'></div><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='消费用途' id='type' readonly='readonly'></div><div class='mui-input-row'>仅看我<div class='mui-switch mui-switch-blue mui-active' id='onlyMe'><div class='mui-switch-handle' ></div></div></div></form");
+	    	         $('.mui-popup-input').after("<form class='mui-input-group' style='margin-top:10%;'><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='开始时间' id='startDate' readonly='readonly'></div><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='结束时间' id='endDate' readonly='readonly'></div><div class='mui-input-row'><input type='text' class='mui-input-clear' placeholder='消费用途' id='type' readonly='readonly'></div><div class='mui-input-row'>仅看我<div class='mui-switch mui-switch-blue mui-active' id='onlyMe'><div class='mui-switch-handle' ></div></div></div></form>");
 	    	         $('.mui-popup-input input').remove();  
 
 	    		     document.querySelector('#type').addEventListener("tap", function() {
 	    		         var roadPick = new mui.PopPicker();//获取弹出列表组建，假如是二联则在括号里面加入{layer:2}
-	    		                   roadPick.setData([{//设置弹出列表的信息，假如是二联，还需要一个children属性
-	    		                       value: "1",
-	    		                       text: "生活小分队"
-	    		                   }, {
-	    		                       value: "2",
-	    		                       text: "借贷"
-	    		                   }]);
+	    		         console.log(types);
+	    		         roadPick.setData(types);
 	    		         roadPick.show(function(item) {//弹出列表并在里面写业务代码
-	    		           var itemCallback=roadPick.getSelectedItems();  
-	    		            $('#type').val(itemCallback[0].text);
-	    		          });
-	    		               }); 
+	    		        	 var itemCallback=roadPick.getSelectedItems();  
+	    		       		 $('#type').val(itemCallback[0].text);
+	    		        	 if(itemCallback[0].value != null){
+	    		       	 		 queryTypeNo = itemCallback[0].value;
+	    		       		 }
+	    		         });
+	    		     }); 
 		               
 	    		     document.querySelector('#startDate').addEventListener("tap", function() {
 	    		     var dtpicker = new mui.DtPicker({ 
 	    		    	    type: "datetime",//设置日历初始视图模式 
-	    		    	    beginDate: new Date(2015, 04, 25, 00, 00),//设置开始日期 
+	    		    	    beginDate: new Date(2012, 7, 12, 12, 00),//设置开始日期 
 	    		    	    endDate: new Date(),//设置结束日期 
 	    		    	    labels: ['年', '月', '日', '时', '分'],//设置默认标签区域提示语 
 	    		    	    customData: {}
@@ -164,6 +254,7 @@
 	    		    	dtpicker.show(function(e) { 
 	    		    	    console.log(e.text); 
 	    		    	    $('#startDate').val(e.text);
+	    		    	    startDate = e.text;
 /* 		    		    	var iTems = dtpicker.getSelectedItems();
 		    		    	console.log(iTems);  */
 	    		    	})   		
@@ -174,7 +265,7 @@
 	    		     document.querySelector('#endDate').addEventListener("tap", function() {
 	    		     var dtpicker = new mui.DtPicker({ 
 	    		    	    type: "datetime",//设置日历初始视图模式 
-	    		    	    beginDate: new Date(2015, 04, 25, 00, 00),//设置开始日期 
+	    		    	    beginDate: new Date(2012, 07, 12, 12, 00),//设置开始日期 
 	    		    	    endDate: new Date(),//设置结束日期 
 	    		    	    labels: ['年', '月', '日', '时', '分'],//设置默认标签区域提示语 
 	    		    	    customData: {}
@@ -183,6 +274,7 @@
 	    		    	dtpicker.show(function(e) { 
 	    		    	    console.log(e.text); 
 	    		    	    $('#endDate').val(e.text);
+	    		    	    endDate = e.text;
 /* 		    		    	var iTems = dtpicker.getSelectedItems();
 		    		    	console.log(iTems);  */
 	    		    	})
@@ -192,17 +284,23 @@
                      mui('.mui-switch').switch();
 	    	         mui(".mui-switch").switch().toggle(); 
 	    	         document.getElementById("onlyMe").addEventListener("toggle",function(event){
+	    	        	 onlyMe = event.detail.isActive;
 	    	        	  if(event.detail.isActive){
-	    	        	    console.log("你启动了开关");
+	    	        	    console.log("仅看自己");
 	    	        	  }else{
-	    	        	    console.log("你关闭了开关");  
+	    	        	    console.log("查看所有");  
 	    	        	  }
 	    	        	})
 	     });
 
+		
+		/**
+		 * 添加消费记录
+		 */
 			//输入框prompt
 	     document.getElementById("a2").addEventListener('tap', function(e) 
 	    	     {
+	    			 var selectedType;
 	    	         //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
 	    	         e.detail.gesture.preventDefault(); 
 	    	         var btnArray = ['取消', '确定'];
@@ -210,8 +308,45 @@
 	    	         {
 	    	             if (e.index == 1) 
 	    	             {
-	    	            	 mui.toast('登录失败');
-	    	            	 console.log($("#desc").val());
+	    	            	 var costMoney = $("#money").val();
+	    	            	 var costDate = $("#time").val();
+	    	            	 var costDesc = $("#desc").val();
+	    	            	 if(costDesc == null || costDate == null || costDesc == null || selectedType == null){
+	    	            		 mui.toast("请补全消费信息");
+	    	            		 throw "cost info can not be null";
+	    	            	 }
+	    	            	 
+	    	            	 // 校验money是否正确
+/* 	    	            	 var reg = /^[0-9]+(.[0-9]{2})?$/;
+	    	            	 if(reg.test(costMoney)) */
+	    	            	 
+	    	            	 var costData = '{"type_no":'+selectedType+',"cost_money":"'+costMoney+'","cost_date":"'+costDate+'","cost_desc":"'+costDesc+'"}';
+	    	            	 console.log(costData);
+	    	            	 $.ajax({
+	    	            		 url:"cost/add",
+	    	            		 type:"post",
+	    	            		 data: costData,       							
+	    	            	     contentType : 'application/json',
+        						 dataType : 'json',
+	    	            		 async:true,
+	    	            		 success:function(data){
+	    	            			 mui.toast(data.msg);
+	    	            			 var typeValue = $("#type").val();
+	    	            			 var str = '<div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">';
+	    	            			 str = str + '<div class="mui-card-header mui-card-media" style="height:auto;background-image:url(/img/header.jpg)"><b>'+typeValue+'</b></div>';
+	    	            			 str = str + '<div class="mui-card-content" style="height:40vw;background-image:url(/img/header.jpg)">';
+	    	            			 str = str + '<div style="padding-top: 5%;"><div><span class="mui-icon mui-icon-person" style="padding-left: 1%;"></span> <span class="mui-badge mui-badge-primary">'+data.data+'</span>';
+	    	            			 str = str + '<span class="mui-icon mui-icon-star" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-green">'+costDate+'</span>';
+	    	            			 str = str + '<span class="mui-icon mui-icon-locked" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-warning">'+costMoney+'元</span>';
+	    	            			 str = str + '</div><div><span class="mui-icon mui-icon-chatbubble" style="padding-left: 1%;padding-right: 1%;padding-top:3%"></span><span class="mui-badge mui-badge-warning">'+costDesc+'</span></div>';
+	    	            			 $("#scroll").append(str);
+	    	            			 /* 	    	      var 
+	    	            			 $("#scroll"). */
+	    	            		 },
+	    	            		 error:function(){
+	    	            			 mui.toast("oh，服务器开小差了");
+	    	            		 }
+	    	            	 });
 	    	             } 
 	    	             else 
 	    	             {
@@ -223,18 +358,13 @@
 
 	    		     document.querySelector('#type').addEventListener("tap", function() {
 	    		         var roadPick = new mui.PopPicker();//获取弹出列表组建，假如是二联则在括号里面加入{layer:2}
-	    		                   roadPick.setData([{//设置弹出列表的信息，假如是二联，还需要一个children属性
-	    		                       value: "1",
-	    		                       text: "生活小分队"
-	    		                   }, {
-	    		                       value: "2",
-	    		                       text: "借贷"
-	    		                   }]);
+	    		                   roadPick.setData(types);
 	    		         roadPick.show(function(item) {//弹出列表并在里面写业务代码
-	    		           var itemCallback=roadPick.getSelectedItems();  
-	    		            $('#type').val(itemCallback[0].text);
-	    		          });
-	    		               }); 
+	    		         var itemCallback=roadPick.getSelectedItems();  
+	    		         $('#type').val(itemCallback[0].text);
+	    		         selectedType = itemCallback[0].value;
+	    		         });
+	    		     }); 
 		               
 	    		     document.querySelector('#time').addEventListener("tap", function() {
 	    		     var dtpicker = new mui.DtPicker({ 
