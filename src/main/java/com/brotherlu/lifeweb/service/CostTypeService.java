@@ -28,7 +28,7 @@ public class CostTypeService {
 	 * @param userNo
 	 * @return
 	 */
-	public String getUserCostType(Integer userNo){
+	public Object getUserCostType(Integer userNo){
 		CommonResultVo resultVo = new CommonResultVo();
 		String url = CommonConstant.HOST + "/life/cost/type/list/"+userNo;
 		HttpUtil.doPost(url, null, resultVo);
@@ -47,7 +47,7 @@ public class CostTypeService {
 					result.add(resultMap);
 				}
 			}
-			return JSONObject.toJSONString(result);
+			return result;
 		}
 		return null;
 	}

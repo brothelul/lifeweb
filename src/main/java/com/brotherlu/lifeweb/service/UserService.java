@@ -5,6 +5,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
@@ -19,6 +22,9 @@ import com.brotherlu.lifeweb.vo.UserInfoVo;
 public class UserService {
 	
 	private Logger logger = LoggerFactory.getLogger(UserService.class);
+	
+	@Autowired
+	private RedisTemplate redisTemplate;
 	
 	public UserInfoVo userLogin(String username, String password) {
 		/** user login**/
@@ -43,18 +49,30 @@ public class UserService {
 				userNo = (int)resultMap.get("data");
 			}
 			if(userNo != null) {
-				String infoUrl = CommonConstant.HOST+"/life/user/info/detail/"+userNo;
-				CommonResultVo userInfoResult = new CommonResultVo();
-				HttpUtil.doPost(infoUrl, "", userInfoResult);
-				if(userInfoResult.getStatusCode() == 200) {
-					Map<String, Object> userInfoResultMap = (Map<String, Object>) 
-							JSONParseUtil.Json2Object((String)userInfoResult.getData(), Map.class);
-					String userInfoJson = 
-							JSONObject.toJSONString(userInfoResultMap.get("data"));
-					logger.info(">>>>>>>>>>>>>>>>>>>>>>user Info:"+userInfoJson+">>>>>>>>>>>>>>>>>>>>>>");
-					UserInfoVo  userInfo = (UserInfoVo) 
-							JSONParseUtil.Json2Object(userInfoJson,UserInfoVo.class);
+				UserInfoVo  userInfo;
+				String key  = "userLogin_"+userNo;
+				ValueOperations operations = redisTemplate.opsForValue();
+				if (redisTemplate.hasKey(key)) {
+					userInfo = (UserInfoVo) operations.get(key);
+					logger.info(">>>>>>>>>>>>>get the user info from cache, user info:"+userInfo.toString()+">>>>>>>>>>>>>>");
 					return userInfo;
+				} else{
+					String infoUrl = CommonConstant.HOST+"/life/user/info/detail/"+userNo;
+					CommonResultVo userInfoResult = new CommonResultVo();
+					HttpUtil.doPost(infoUrl, "", userInfoResult);
+					if(userInfoResult.getStatusCode() == 200) {
+						Map<String, Object> userInfoResultMap = (Map<String, Object>) 
+								JSONParseUtil.Json2Object((String)userInfoResult.getData(), Map.class);
+						String userInfoJson = 
+								JSONObject.toJSONString(userInfoResultMap.get("data"));
+						logger.info(">>>>>>>>>>>>>>>>>>>>>>user Info:"+userInfoJson+">>>>>>>>>>>>>>>>>>>>>>");
+						userInfo = (UserInfoVo) 
+								JSONParseUtil.Json2Object(userInfoJson,UserInfoVo.class);
+						
+						operations.set(key, userInfo);
+						logger.info(">>>>>>>>>>>>>set the user notice into cache, user notice:"+userInfo.toString()+">>>>>>>>>>>>>>>");
+						return userInfo;
+					}
 				}
 			}
 		}

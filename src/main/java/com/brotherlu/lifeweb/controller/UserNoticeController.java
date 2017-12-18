@@ -8,6 +8,8 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,15 +28,30 @@ public class UserNoticeController {
 	
 	@Autowired
 	private UserNoticesService userNoticeService;
+	@Autowired
+	private RedisTemplate redisTemplate;
 	
 	@GetMapping("/user/notices")
 	@ResponseBody
 	public CommonResultVo getUserNotices(HttpSession session) {
 		CommonResultVo resultVo = new CommonResultVo();
 		UserInfoVo userInfoVo = (UserInfoVo) session.getAttribute("lifeUser");
-		Map<String, Object> map = new HashMap<>();
-		map.put("user_no", userInfoVo.getUserNo());
-		String userNotice = userNoticeService.getUserNotices(map);
+		Integer userNo = userInfoVo.getUserNo();
+		String userNotice;
+		
+		String key = "getUserNotices_"+userNo;
+		ValueOperations operations = redisTemplate.opsForValue();
+		if (redisTemplate.hasKey(key)) {
+			userNotice = (String) operations.get(key);
+			logger.info(">>>>>>>>>>get user notice form cache, user notices:"+userNotice+">>>>>>>>>>>>>>>>>>>");
+		} else{
+			Map<String, Object> map = new HashMap<>();
+			map.put("user_no", userNo);
+			userNotice = userNoticeService.getUserNotices(map);
+			operations.set(key, userNotice);
+			logger.info(">>>>>>>>>>>>>set the user notice into cache, user notice:"+userNotice+">>>>>>>>>>>>>>>");
+		}	
+	
 		resultVo.setData(userNotice);
 		resultVo.setStatusCode(200);
 		resultVo.setSuccess(CommonResultVo.SUCCESS);
@@ -53,6 +70,12 @@ public class UserNoticeController {
 		resultVo.setStatusCode(result ? 200 : 500);
 		resultVo.setMsg(result ? userInfoVo.getUsername() : "创建通知失败");
 		resultVo.setSuccess(result ? CommonResultVo.SUCCESS : CommonResultVo.FAIL);
+		/** if save the notice successfully, then put to cache **/
+		if (result) {
+			String key = "getUserNotices_"+userInfoVo.getUserNo();
+			redisTemplate.delete(key);
+			logger.info(">>>>>>>>>>>>>>>>>>>remove the user notice cache successfully<<<<<<<<<<<<<<<");
+		}
 		return resultVo;
 	}
 }

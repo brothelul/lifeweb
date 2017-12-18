@@ -1,11 +1,15 @@
 package com.brotherlu.lifeweb.controller;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +24,8 @@ public class UserContoller {
 	
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private RedisTemplate redisTemplate;
 	
 	@PostMapping("user/login")
 	@ResponseBody
@@ -66,6 +72,14 @@ public class UserContoller {
 	public String toOrder() {
 		
 		return "order";
+	}
+	
+	@GetMapping("/remove/allCache")
+	public String removeCache(HttpSession session){
+	
+		Set<String> names = redisTemplate.keys("");
+		redisTemplate.delete(names);
+		return "cache";
 	}
 	
 }

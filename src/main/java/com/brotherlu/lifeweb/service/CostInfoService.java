@@ -9,6 +9,8 @@ import net.minidev.json.JSONUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -141,7 +143,7 @@ public class CostInfoService {
 		return false;
 	}
 
-	public String findUserTotalCost(Map<String, Object> conditions) {
+	public Object findUserTotalCost(Map<String, Object> conditions) {
 		Integer satrtPage = (Integer) conditions.get("start_page");
 		Integer pageSize = (Integer) conditions.get("page_size");
 		String sartDateString = (String) conditions.get("start_date");
@@ -194,8 +196,8 @@ public class CostInfoService {
 			String dataJSON = (String) resultVo.getData();
 			Map<String,Object> dataMap = 
 					(Map<String, Object>) JSONParseUtil.Json2Object(dataJSON, Map.class); 
-			String costInfo = JSONObject.toJSONString(dataMap.get("data"));
-			return costInfo;
+//			String costInfo = JSONObject.toJSONString(dataMap.get("data"));
+			return dataMap.get("data");
 		}
 		
 		return null;
