@@ -51,12 +51,12 @@
 					var totalCostInfos = jQuery.parseJSON(data.data);
 					console.log(data.data);
 					if(totalCostInfos.length > 0){
-						$(".mui-table-view").html("");
+						$("#totalCost").html("");
 						for(var i=0; i < totalCostInfos.length; i++){
 							var totalCostInfo = totalCostInfos[i];
 							var str = "";
 							str = str + '<li class="mui-table-view-cell"><b>'+totalCostInfo.username+'</b>'+totalCostInfo.typeName+'<span class="mui-badge mui-badge-primary">'+totalCostInfo.totalCost+'元</span></li>';
-							$(".mui-table-view").append(str);
+							$("#totalCost").append(str);
 						}
 					}
 				}
@@ -102,7 +102,7 @@
                			$("#noticeMsg").html("");
                    		for(var i = 0; i<notices.length; i++){
                    			var notice = notices[i];
-                   			$("#noticeMsg").append(notice.noticeContent+'---来自'+notice.typeName+'('+notice.username+')<br/>');
+                   			$("#noticeMsg").append('<li class="mui-table-view-cell">'+notice.noticeContent+'<span class="mui-badge mui-badge-primary">'+notice.typeName+'('+notice.username+')</span></li>');
                    		}
                		}
            		}
@@ -130,8 +130,8 @@
 	<!--页眉，放置标题-->
 	<div class="mui-card-header mui-card-media" style="height:auto;background-image:url(/img/header.jpg)"><b>公告栏 </b> <span class="mui-icon mui-icon-compose" style="float: right;" id="notice"></span></div>
 	<!--内容区-->
-	<div class="mui-card-content" style="height:auto;background-image:url(/img/header.jpg)" id="noticeMsg">
-
+	<div class="mui-card-content" >
+     <ul class="mui-table-view" id="noticeMsg"></ul>
 </div>
 	</div>
 </div>
@@ -172,7 +172,7 @@
 			   	 			dataType : 'json',
 			   	 			success : function(data){
 			   	 				if(data.statusCode == 200){
-			   	 					$("#noticeMsg").append(content+'---'+"来自"+typeValue+'('+data.msg+')<br/>');
+			   	 					$("#noticeMsg").append('<li class="mui-table-view-cell">'+content+'<span class="mui-badge mui-badge-primary">'+typeValue+'('+data.msg+')</span></li>');
 			   	 				} else{
 			   	 					mui.toast(data.msg);
 			   	 				}
@@ -208,7 +208,7 @@
 	</script>
 	<!--内容区-->
 	<div class="mui-card-content">
-	<ul class="mui-table-view">
+	<ul class="mui-table-view" id="totalCost">
     <li class="mui-table-view-cell" style="text-align: center;"><b>暂无信息</b>
     </ul>
 	</div>

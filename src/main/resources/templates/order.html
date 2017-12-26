@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
-    <title></title>
+    <title>Life</title>
     <script src="/js/jquery.min.js"></script>
     <script src="/js/mui.js"></script>
     <script src="/js/mui.dtpicker.js"></script>
@@ -14,6 +14,7 @@
     <link href="/css/mui.poppicker.css" rel="stylesheet"/>
     <link href="/css/mui.picker.css" rel="stylesheet"/>
     <script type="text/javascript" charset="utf-8">
+    
 	mui.init({
 		pullRefresh : {
 			container:"#refreshContainer",//待刷新区域标识，querySelector能定位的css选择器均可，比如：id、.class等		
@@ -83,26 +84,28 @@
 					if(data.statusCode == 200 && data.data != null){
 						var costInfos = jQuery.parseJSON(data.data);
 						if(costInfos.length <= 0){
-							mui.toast("没有更多数据了");
-							return;
-						}
-						console.log(costInfos.length);
-						if(startNo1 == 0){
-							$("#scroll").html("");
-						}
-						for(var i = 0; i< costInfos.length; i ++){
-							var costInfo = costInfos[i];
-		           			 var str = '<div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">';
-		        			 str = str + '<div class="mui-card-header mui-card-media" style="height:auto;background-image:url(/img/header.jpg)"><b>'+costInfo.typeName+'</b></div>';
-		        			 str = str + '<div class="mui-card-content" style="height:25vw;background-image:url(/img/header.jpg)">';
-		        			 str = str + '<div style="padding-top: 5%;"><div><span class="mui-icon mui-icon-person" style="padding-left: 1%;"></span> <span class="mui-badge mui-badge-primary">'+costInfo.username+'</span>';
-		        			 str = str + '<span class="mui-icon mui-icon-star" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-green">'+costInfo.costDate+'</span>';
-		        			 str = str + '<span class="mui-icon mui-icon-locked" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-warning">'+costInfo.costMoney+'元</span>';
-		        			 str = str + '</div><div><span class="mui-icon mui-icon-chatbubble" style="padding-left: 1%;padding-right: 1%;padding-top:3%"></span><span class="mui-badge mui-badge-warning">'+costInfo.costDesc+'</span></div></div></div></div>';
-		        			 $("#scroll").append(str);
+							mui.toast("别刷了，没了！");
+							mui('#refreshContainer').pullRefresh().endPullupToRefresh(true);
+						} else{
+							console.log(costInfos.length);
+							if(startNo1 == 0){
+								$("#scroll").html("");
+							}
+							for(var i = 0; i< costInfos.length; i ++){
+								var costInfo = costInfos[i];
+			           			 var str = '<div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">';
+			        			 str = str + '<div class="mui-card-header mui-card-media" style="height:auto;background-image:url(/img/header.jpg)"><b>'+costInfo.typeName+'</b></div>';
+			        			 str = str + '<div class="mui-card-content" style="height:25vw;background-image:url(/img/header.jpg)">';
+			        			 str = str + '<div style="padding-top: 5%;"><div><span class="mui-icon mui-icon-person" style="padding-left: 1%;"></span> <span class="mui-badge mui-badge-primary">'+costInfo.username+'</span>';
+			        			 str = str + '<span class="mui-icon mui-icon-star" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-green">'+costInfo.costDate+'</span>';
+			        			 str = str + '<span class="mui-icon mui-icon-locked" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-warning">'+costInfo.costMoney+'元</span>';
+			        			 str = str + '</div><div><span class="mui-icon mui-icon-chatbubble" style="padding-left: 1%;padding-right: 1%;padding-top:3%"></span><span class="mui-badge mui-badge-warning">'+costInfo.costDesc+'</span></div></div></div></div>';
+			        			 $("#scroll").append(str);
+							}
 						}
 					}else{
-						mui.toast("没有更多数据了");
+						mui.toast("什么都没了！");
+						mui('#refreshContainer').pullRefresh().endPullupToRefresh(true);
 					}
 					
 				},
@@ -118,20 +121,22 @@
      *
      */
      function pullupRefresh() {
-         setTimeout(function() {
+/*          setTimeout(function() {
                      //找出body标签下所有class为mui-table-view的标签        
-                     console.log(startNo);
-                    startNo ++;
-                    loadCostInfos(pageSize,startNo,startDate,endDate,onlyMe);
-                    console.log("OK");
-					mui('#refreshContainer').pullRefresh().enablePullupToRefresh(true);
+
                     //refresh completed
                     // mui('#pullup-container').pullRefresh().refresh(true);
-                   //  mui('#refreshContainer').pullRefresh().refresh(true);
-                 }, 500);
-//            this.endPullupToRefresh(true);
+                    // mui('#refreshContainer').pullRefresh().refresh(true);
+                    //this.endPullupToRefresh(true);
+                 }, 1000);
+//            this.endPullupToRefresh(true); */
 
-            }
+         startNo ++;
+         loadCostInfos(pageSize,startNo,startDate,endDate,onlyMe);
+    	 mui('#refreshContainer').pullRefresh().endPullupToRefresh(false);
+
+
+   }
  
 /*      function getTotalCost(){
          var requestData = '{"type_no":-1,"start_date":"","end_date":"","start_page":0,"page_size":9,"only_me":false}';
@@ -163,27 +168,12 @@
 <body>
 
 <header class="mui-bar mui-bar-nav">
-    <a id="back" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left" href="/user/index"></a>
+    <a id="back" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
     <h1 id="title" class="mui-title">消费记录详情页</h1>
 </header>	
 	<!--下拉刷新容器-->
 <div id="refreshContainer" class="mui-content mui-scroll-wrapper" style="margin-bottom: 10%;">
   <div class="mui-scroll" id="scroll">
-   
-    <!--数据列表-->
-     <div class="mui-card mui-table-view mui-table-view-chevron" style="margin-top: 5%;">
-
-	<!--页眉，放置标题-->
-	<div class="mui-card-header mui-card-media" style="height:auto;background-image:url(/img/header.jpg)"><b>家庭生活开支 </b></div>
-	<!--内容区-->
-	<div class="mui-card-content" style="height:40vw;background-image:url(/img/header.jpg)">
-		<div style="padding-top: 5%;">
-			<span class="mui-icon mui-icon-person" style="padding-left: 1%;"></span> <span class="mui-badge mui-badge-primary">Test</span>
-			<span class="mui-icon mui-icon-star" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-green">2017-12-15 08:33</span>
-			<span class="mui-icon mui-icon-locked" style="padding-left: 3%;"></span> <span class="mui-badge mui-badge-warning">23.50元</span>
-		</div>
-	</div>
-    </div>
     </div>
   </div>
 
@@ -199,10 +189,6 @@
                 <span class="mui-icon mui-icon-plus"></span>  
                 <span class="mui-tab-label">添加记录</span>
             </a> 
-<!--             <a class="mui-tab-item" id="a3"> 
-			<span class="mui-icon"></span>
-			<span class="mui-tab-label">消费：39.6元</span>
-            </a> -->
    </nav> 
    
    <script type="text/javascript">
@@ -217,8 +203,11 @@
 	    	             if (e.index == 1) 
 	    	             {
 	    	            	 startNo = 0;
+	    	            	 $("#scroll").html("");
 	    	            	 mui("#refreshContainer").scroll().scrollTo(0,-100,0);
+	    	            	 //mui('#refreshContainer').pullRefresh().endPullupToRefresh(false);
 	    	            	 mui('#refreshContainer').pullRefresh().enablePullupToRefresh(true);
+	    	            	 //mui('#refreshContainer').pullRefresh().refresh(true);
 	    	            	 loadCostInfos(pageSize,startNo,startDate,endDate,onlyMe,queryTypeNo);
 	    	             } 
 	    	             else 
@@ -385,6 +374,10 @@
 	    		     });
 	     });
 
+		$("#back").click(function(){
+			window.location.href = "/user/index";
+		});
+		
 /* 	     var dtpicker = new mui.DtPicker({ 
 	    	    "type": "time",
 	    	    "customData": {

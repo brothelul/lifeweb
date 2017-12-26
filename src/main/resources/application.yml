@@ -47,6 +47,12 @@ spring:
       ## 连接池中的最小空闲连接
       min-idle : 0
 
+#关闭服务
+endpoints:
+  shutdown:
+      enabled : true
+      sensitive : false
+
 #mynatis配置
 ##mybatis:
 ##  type-aliases-package: com.eumji.zblog.vo
@@ -62,4 +68,3 @@ logging:
 server:
   session-timeout : 3600
   port: 8089
-
