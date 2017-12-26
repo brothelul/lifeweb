@@ -5,12 +5,8 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.Map;
 
-import net.minidev.json.JSONUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -20,7 +16,6 @@ import com.brotherlu.lifeweb.utils.FormatUtil;
 import com.brotherlu.lifeweb.utils.HttpUtil;
 import com.brotherlu.lifeweb.utils.JSONParseUtil;
 import com.brotherlu.lifeweb.vo.CommonResultVo;
-import com.brotherlu.lifeweb.vo.CostInfoSummary;
 
 @Service
 public class CostInfoService {
@@ -57,10 +52,12 @@ public class CostInfoService {
 		
 		if (StringUtils.isEmpty(sartDateString)) {
 			sartDateString = "2012-7-12 12:00"; //别问我为什么，问女主人就好了
+			conditions.put("start_date", sartDateString);
 		}
 		
 		if (StringUtils.isEmpty(endDateString)) {
 			endDateString = FormatUtil.Date2String(new Date(), CommonConstant.WEB_DATE_PATTERN);
+			conditions.put("end_date", endDateString);
 		}
 		
 		if (pageSize == null || pageSize == 0){
