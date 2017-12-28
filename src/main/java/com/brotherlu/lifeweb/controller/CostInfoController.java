@@ -1,5 +1,6 @@
 package com.brotherlu.lifeweb.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,14 +12,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.thymeleaf.context.Context;
 
 import com.alibaba.fastjson.JSONArray;
+import com.brotherlu.lifeweb.constants.CommonConstant;
 import com.brotherlu.lifeweb.service.CostInfoService;
 import com.brotherlu.lifeweb.service.CostTypeService;
 import com.brotherlu.lifeweb.utils.JSONParseUtil;
+import com.brotherlu.lifeweb.utils.MailUtil;
 import com.brotherlu.lifeweb.vo.CommonResultVo;
 import com.brotherlu.lifeweb.vo.UserInfoVo;
 
@@ -33,6 +38,8 @@ public class CostInfoController {
 	private CostTypeService costTypeService;
 	@Autowired
 	private RedisTemplate redisTemplate;
+	@Autowired
+	private MailUtil mailUtil;
 	/**
 	 * the common request
 	 * {
@@ -60,33 +67,22 @@ public class CostInfoController {
 			resultVo.setSuccess(CommonResultVo.FAIL);
 		}else{
 			/** redis get info **/
-//			String key = "findCostByCondition_"+userInfoVo.getUserNo();
-//			boolean hasValue = redisTemplate.hasKey(key);
-//			ValueOperations<String, String> operations = redisTemplate.opsForValue();		
-//			String costInfo;
-//			if (hasValue) {
-//				costInfo =  operations.get(key);
-//				logger.info(">>>>>>>>>>>>>>>>get the cost info from cache, cost info:"+costInfo+">>>>>>>>>>>>>>>>");
-//			}else{
-				Integer userNo = (Integer) requestParams.get("user_no");
-				boolean onlyMe = (boolean) requestParams.get("only_me");
-				Integer typeNo = (Integer) requestParams.get("type_no");
-				if (onlyMe) {
-					userNo = userInfoVo.getUserNo();
-					requestParams.put("user_no",userNo);
-				}
-				requestParams.remove("only_me");
-				logger.info(">>>>>>>>>>>>>>>>>>user input info:"+JSONParseUtil.Object2Json(requestParams)+">>>>>>>>>>>>>>>>");
-				
-				if(userNo == null && (typeNo == null || typeNo ==-1)){
-					userNo = userInfoVo.getUserNo();
-					requestParams.put("user_no",userNo);
-					requestParams.put("type_no",-1);
-				}
-				String costInfo = costInfoService.findCostByCondition(requestParams);
-//				operations.set(key, costInfo);
-//				logger.info(">>>>>>>>>>>>>>>>>put the cost info to the cache, cost info:"+costInfo+">>>>>>>>>>>>>>>>");
-//			}
+			Integer userNo = (Integer) requestParams.get("user_no");
+			boolean onlyMe = (boolean) requestParams.get("only_me");
+			Integer typeNo = (Integer) requestParams.get("type_no");
+			if (onlyMe) {
+				userNo = userInfoVo.getUserNo();
+				requestParams.put("user_no",userNo);
+			}
+			requestParams.remove("only_me");
+			logger.info(">>>>>>>>>>>>>>>>>>user input info:"+JSONParseUtil.Object2Json(requestParams)+">>>>>>>>>>>>>>>>");
+			
+			if(userNo == null && (typeNo == null || typeNo ==-1)){
+				userNo = userInfoVo.getUserNo();
+				requestParams.put("user_no",userNo);
+				requestParams.put("type_no",-1);
+			}
+			String costInfo = costInfoService.findCostByCondition(requestParams);
 			resultVo.setStatusCode(200);
 			resultVo.setData(costInfo);
 			resultVo.setSuccess(CommonResultVo.SUCCESS);
@@ -127,7 +123,7 @@ public class CostInfoController {
 			resultVo.setData(result ? userInfoVo.getUsername() : null);
 			if(result){
 //				String key1 = "findCostByCondition_"+userNo;
-				String key = "getTotalCost_"+userNo;
+				String key = "getTotalCost_" + requestParams.get("type_no");
 				if (redisTemplate.hasKey(key)) {
 					redisTemplate.delete(key);
 					logger.info(">>>>>>>>>>>>>>>>remove the toatal cost info from cache>>>>>>>>>>>>>>>>");
@@ -166,25 +162,25 @@ public class CostInfoController {
 			if (types != null) {
 //				JSONArray typesArray = (JSONArray) JSONParseUtil.Json2Object(typeNos, JSONArray.class);
 				JSONArray costInfos = new JSONArray();
-				String userTotalCostKey = "getTotalCost_"+userNo;
-				if (redisTemplate.hasKey(userTotalCostKey)) {
-					costInfos = (JSONArray) operations.get(userTotalCostKey);
-					logger.info(">>>>>>>>>>> get user total cost info from cache, info:"+costInfos.toJSONString()+">>>>>>>>>>>>>>>>");
-				} else{
-					for (Object object : types) {
-						Map<String,Object> type = (Map)object;
-						requestParams.put("type_no",type.get("value"));
-						//request 
-						JSONArray costInfo =
-								(JSONArray) costInfoService.findUserTotalCost(requestParams);
-						if (costInfo != null) {
-							costInfos.addAll(costInfo);
-						}
-					}
+				for (Object object : types) {
+					JSONArray costInfo;
+					Map<String,Object> type = (Map)object;
+					requestParams.put("type_no",type.get("value"));
 					
-					operations.set(userTotalCostKey, costInfos);
-					logger.info(">>>>>>>>>>> put user total cost info into cache, info:"+costInfos.toJSONString()+">>>>>>>>>>>>>>>>");
-
+					String userTotalCostKey = "getTotalCost_"+type.get("value");
+					if (redisTemplate.hasKey(userTotalCostKey)) {
+						costInfo = (JSONArray) operations.get(userTotalCostKey);
+						logger.info(">>>>>>>>>>> get user total cost info from cache, info:"+costInfos.toJSONString()+">>>>>>>>>>>>>>>>");
+					} else{
+						//request 
+						costInfo =
+								(JSONArray) costInfoService.findUserTotalCost(requestParams);
+						operations.set(userTotalCostKey, costInfo);
+						logger.info(">>>>>>>>>>> put user total cost info into cache, info:"+costInfos.toJSONString()+">>>>>>>>>>>>>>>>");
+					}
+					if (costInfo != null) {
+						costInfos.addAll(costInfo);
+					}
 				}
 				resultVo.setStatusCode(200);
 				resultVo.setData(costInfos.toJSONString());
@@ -195,10 +191,51 @@ public class CostInfoController {
 				resultVo.setSuccess(CommonResultVo.SUCCESS);
 			}
 
-//			Integer typeNo = (Integer) requestParams.get("type_no");
-
 			logger.info(">>>>>>>>>>>>>>>>>>user input info:"+JSONParseUtil.Object2Json(requestParams)+">>>>>>>>>>>>>>>>");
 	
+		}
+		return resultVo;
+	}
+	
+	@PostMapping("/user/summeryCost/{typeNo}")
+	@ResponseBody
+	public CommonResultVo getSummeryCost(@PathVariable(name="typeNo")Integer typeNo,
+			HttpSession session){
+		UserInfoVo userInfoVo = (UserInfoVo) session.getAttribute("lifeUser");
+		CommonResultVo resultVo = new CommonResultVo();
+		Integer userNo = userInfoVo.getUserNo();
+		String typesKey = "getTypesByUser_"+userNo;
+		ValueOperations operations = redisTemplate.opsForValue();
+		List<Map> types;
+		if (redisTemplate.hasKey(typesKey)) {
+			types = (List<Map>) operations.get(typesKey);
+			logger.info(">>>>>>>>>>>>>>>>get the types for cache, types"+JSONParseUtil.Object2Json(types)+">>>>>>>>>>>>>>>>>");
+		} else{
+			types = (List<Map>) costTypeService.getUserCostType(userInfoVo.getUserNo());
+			operations.set(typesKey, types);
+			logger.info(">>>>>>>>>>>>>>>>put the types into cache, types"+JSONParseUtil.Object2Json(types)+">>>>>>>>>>>>>>>>>");
+		}
+		if (types != null) {
+			for (Map type : types) {
+				if ((int)type.get("value") == (int)typeNo) {
+					List<Map<String,Object>> result = costInfoService.getSummeryCost(typeNo);
+					String subject = type.get("text")+"详细开支";
+					String template = CommonConstant.EMAIL_COST_SUMMERY;
+					Map<String, Object> context = new HashMap<>();
+					context.put("result", result);
+					String[] to = {"1285823170@qq.com"};
+					try {
+						mailUtil.sendTemplateEmail(null, to , null, subject, template, context);
+						resultVo.setStatusCode(200);
+						resultVo.setSuccess(CommonResultVo.SUCCESS);
+						resultVo.setMsg("发送成功");
+					} catch (Exception e) {
+						resultVo.setStatusCode(500);
+						resultVo.setSuccess(CommonResultVo.FAIL);
+						resultVo.setMsg("发送失败，联系管理员");
+					}
+				}
+			}
 		}
 		return resultVo;
 	}

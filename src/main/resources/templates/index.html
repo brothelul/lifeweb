@@ -36,6 +36,8 @@
     <script type="text/javascript">
     mui.init();
     
+    var types;
+    
     /** 获取消费信息 **/
     $(document).ready(function(){
     	
@@ -49,7 +51,6 @@
 			success : function(data){
 				if(data.statusCode == 200 && data.data != null){
 					var totalCostInfos = jQuery.parseJSON(data.data);
-					console.log(data.data);
 					if(totalCostInfos.length > 0){
 						$("#totalCost").html("");
 						for(var i=0; i < totalCostInfos.length; i++){
@@ -96,7 +97,6 @@
            	success: function(data){
            		if(data.statusCode == 200){
                		var notices = jQuery.parseJSON(data.data);
-               		console.log(data.data);
                		if(notices != null && notices.length > 0){
                			
                			$("#noticeMsg").html("");
@@ -113,6 +113,7 @@
            });
     	
     });
+    
     </script>
 </head>
 <body>
@@ -194,7 +195,6 @@
 
    		     document.querySelector('#type').addEventListener("tap", function() {
    		         var roadPick = new mui.PopPicker();//获取弹出列表组建，假如是二联则在括号里面加入{layer:2}
-   		         console.log(types);
    		         roadPick.setData(types);
    		         roadPick.show(function(item) {//弹出列表并在里面写业务代码
    		        	 var itemCallback=roadPick.getSelectedItems();  
@@ -205,6 +205,8 @@
    		         });
    		     }); 
    	     });
+    
+    
 	</script>
 	<!--内容区-->
 	<div class="mui-card-content">
@@ -212,6 +214,58 @@
     <li class="mui-table-view-cell" style="text-align: center;"><b>暂无信息</b>
     </ul>
 	</div>
-</div>
+	</div>
+	
+	<!-- 发邮件 -->
+	<div class="mui-card">
+    <div class="mui-card-content">
+		<form class="mui-input-group">
+			<div class="mui-input-row">
+				<label>用户名</label>
+				<input type="text" class="mui-input-clear" placeholder="选择查看的分组" id="mail" readonly="readonly">
+			</div>
+			 	<div class="mui-button-row" style="margin-top: 3%;">
+    			<button type="button" data-loading-text="发送中" class="mui-btn mui-btn-primary" id="send" style="width: 95%;">登录</button>       			
+ <script type="text/javascript">
+	var selectedType;
+	mui(document.body).on('tap', '#send', function(e) {
+		mui(this).button('loading');      			    
+		setTimeout(function() {      			        
+			mui(this).button('reset');       			      
+		}.bind(this), 500);
+	});   
+	
+ document.querySelector('#mail').addEventListener("tap", function() {
+	 console.log("init");
+     var roadPick = new mui.PopPicker();//获取弹出列表组建，假如是二联则在括号里面加入{layer:2}
+     roadPick.setData(types);
+     roadPick.show(function(item) {//弹出列表并在里面写业务代码	    		         
+    	 var itemCallback=roadPick.getSelectedItems();  	    		       	    		       	    		        	    		         
+   		 $('#mail').val(itemCallback[0].text);
+     	 selectedType = itemCallback[0].value;
+     });
+ }); 
+ 
+	document.getElementById("send").addEventListener('tap', function() {
+		console.log("selectedType--"+selectedType);
+		$.ajax({
+			url:"summeryCost/"+selectedType,
+			type:"POST",
+			contentType : 'application/json',
+			dataType : 'json',
+			success : function(data){
+				//var result = jQuery.parseJSON(data);
+				mui.toast(data.msg);
+			},
+			error: function(){
+				mui.toast('oh，网站貌似有点问题');
+			}
+			});
+	});
+       			</script>
+       			</div>
+       	</form>
+	</div>
+	</div>
 </body>
 </html>

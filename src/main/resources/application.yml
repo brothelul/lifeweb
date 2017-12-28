@@ -25,6 +25,23 @@ spring:
       max-file-size: 10MB
   application:
     name: lifeweb
+  #邮件配置
+  mail:
+    host: smtp.aliyun.com
+    port: 465
+    username: brotherlu@aliyun.com
+    password: xct19960321@
+    properties:
+       smtp:
+          auth: true
+          starttls:
+              enable: true
+              required: true
+       mail:
+          smtp:
+             ssl:
+                enable: true
+    
   ## Redis 配置
   redis:
   ## Redis数据库索引（默认为0）

@@ -2,7 +2,10 @@ package com.brotherlu.lifeweb.service;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -10,12 +13,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.brotherlu.lifeweb.constants.CommonConstant;
 import com.brotherlu.lifeweb.utils.FormatUtil;
 import com.brotherlu.lifeweb.utils.HttpUtil;
 import com.brotherlu.lifeweb.utils.JSONParseUtil;
 import com.brotherlu.lifeweb.vo.CommonResultVo;
+import com.brotherlu.lifeweb.vo.CostInfoSummary;
 
 @Service
 public class CostInfoService {
@@ -199,4 +204,64 @@ public class CostInfoService {
 		
 		return null;
 	}
+	
+	public List<Map<String,Object>> getSummeryCost(Integer typeNo){
+		List<Map<String,Object>> result = new ArrayList<Map<String,Object>>();
+		
+		Map conditions = new HashMap<String, Object>();
+		conditions.put("type_no", typeNo);
+		conditions.put("start_page", 0);
+		conditions.put("page_size", 9999);
+		String costInfos = findCostByCondition(conditions);
+		if (!StringUtils.isEmpty(costInfos)) {
+			JSONArray costInfoArra = (JSONArray) JSONParseUtil.Json2Object(costInfos, JSONArray.class);
+			List<List<JSONObject>> temp = new ArrayList<>();
+			temp.add(new ArrayList<JSONObject>());
+			for (int i =0; i<costInfoArra.size(); i++) {
+				JSONObject object = costInfoArra.getJSONObject(i);
+				
+				for (int j = 0; j < temp.size(); j++) {
+					List<JSONObject> list = temp.get(j);
+					if (list.size() == 0 || (int)object.get("userNo") == (int)list.get(0).get("userNo")) {
+						list.add(object);
+					} else{
+						List<JSONObject> listTemp = new ArrayList<>();
+						listTemp.add(object);
+						temp.add(listTemp);
+					}
+				}
+			}
+			
+			BigDecimal totalUserCost = new BigDecimal(0);
+			for (List<JSONObject> list : temp) {
+				Map<String, Object> map = new HashMap<>();
+				BigDecimal totalCost = new BigDecimal(0);
+				Integer userNoTemp = null; 
+				Integer typeNoTemp = null;
+				String username = null;
+				for (JSONObject jsonObject : list) {
+					totalCost.add(jsonObject.getBigDecimal("costMoney"));
+					userNoTemp = jsonObject.getInteger("userNo");
+					typeNoTemp = jsonObject.getInteger("typeNo");
+					username = jsonObject.getString("username");
+				}
+				map.put("totalCost", totalCost);
+				map.put("userNo", userNoTemp);
+				map.put("typeNo", typeNoTemp);
+				map.put("username", username);
+				map.put("costInfos", list);
+				result.add(map);
+				
+				totalUserCost.add(totalCost);
+			}
+			
+			BigDecimal coverCost = totalUserCost.divide(new BigDecimal(result.size()), 2);
+			for(Map<String,Object> map : result) {
+				map.put("coverCost", coverCost);
+				map.put("leftCost", ((BigDecimal)map.get("totalCost")).subtract(coverCost));
+			}
+		}		
+		
+		return result;
+	} 
 }

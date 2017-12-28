@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Exception</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+          th:href="@{https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css}"/>
+</head>
+<header class="text-center">累计账单</header>
+<body class="container-fluid">
+#foreach(${data} in ${result})
+<div class="text-center"><strong>${data.username}消费信息</strong></div>
+<table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="#ffffff"
+       style="font-family:'微软雅黑';" class="table table-striped small">
+       <thead>
+       	<th>消费分类</th>
+       	<th>消费金额</th>
+       	<th>消费时间</th>
+       	<th>消费描述</th>
+       </thead>
+       <tbody>
+       #foreach(${costInfo} in ${data.costInfos})
+       	<tr>
+       		<td>${costInfo.typeDesc}</td>
+       		<td>${costInfo.costMoney}元</td>
+       		<td>${costInfo.costDate}</td>
+       		<td>${costInfo.costDesc}</td>
+       	</tr>
+       	#end
+       </tbody>
+       <caption style="text-align: right;">累计消费<b>${data.totalCost}</b>元（平均消费<b>${data.coverCost}</b>元，应补<b class="text-danger">${data.leftCost}</b>元）</caption>
+</table>
+#end
+</body>
+</html>

@@ -11,4 +11,7 @@ public class CommonConstant {
 	
 	public static final String LIFE_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 	public static final String WEB_DATE_PATTERN = "yyyy-MM-dd HH:mm";
+	
+	public static final String EMAIL_ERROR = "mail/InternalServerErrorTemplate";
+	public static final String EMAIL_COST_SUMMERY = "mail/CostSummeryTempalte";
 }
